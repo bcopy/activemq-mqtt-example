@@ -122,6 +122,7 @@
             <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.activemq.hooks.SpringContextHook" />
         </shutdownHooks>
 
+        <destinations> <queue physicalName="FOO.BAR" /> <topic physicalName="sensors.one" /> </destinations>
     </broker>
 
     <!--

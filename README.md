@@ -16,13 +16,13 @@ ActiveMQ should start up and dump its activity to the standard output. You can k
 ## Subscribing to ActiveMQ via MQTT
 You can use a debug MQTT client like so :
 ```
-docker run -it --rm --net=host efrecon/mqtt-client sub -h localhost -t "SENSORS/#" -v
+docker run -it --rm --net=host efrecon/mqtt-client sub -h localhost -t "boxe/#" -v
 ```
 
 ## Publishing to ActiveMQ via MQTT
 You can use a debug MQTT client to publish data like so :
 ```
-docker run -it --rm --net=host efrecon/mqtt-client pub -h localhost -t "SENSORS/ONE/VALUES" -d
+docker run -it --rm --net=host efrecon/mqtt-client pub -h localhost -t "boxe/sensor1/values" -d
 ```
 
 ## Inspecting ActiveMQ activity
@@ -46,8 +46,8 @@ Startup the hawt.io console and via your web browser, connect to :
 
 * Startup InfluxDB to collect data
 ```
-docker run -d --restart=always \
-  --name influxdb --hostname medtech-boxe-pi \
+docker run -d --name=influxdb --restart=always \
+   --hostname medtech-boxe-pi \
   -e PGID=1000 -e PUID=1000 \
   -p 8086:8086 -p 8088:8088 -p 4242:4242 \
   -v data:/var/lib/influxdb \
@@ -57,7 +57,18 @@ docker run -d --restart=always \
 ```
 * Startup Telegraf to collect data
 ```
-docker run -v $PWD/modules/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro telegraf
+docker run -d --name=telegraf --restart=always --hostname medtech-boxe-pi -v $PWD/modules/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro telegraf
 ```
 
 * Startup Grafana to inspect the data
+```
+docker run --rm -it \
+  --name grafana --hostname medtech-boxe-pi \
+  -e PGID=1000 -e PUID=1000 \
+  -p 3000:3000 \
+  -v data:/var/lib/grafana/data \
+  -v conf:/var/lib/grafana/conf \
+  -v /etc/hosts:/etc/hosts:ro \
+  -v /etc/localtime:/etc/localtime:ro \
+  woahbase/alpine-grafana:armhf
+```

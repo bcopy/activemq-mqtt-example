@@ -62,7 +62,7 @@ docker run -d --name=telegraf --restart=always --hostname medtech-boxe-pi -v $PW
 
 * Startup Grafana to inspect the data
 ```
-docker run --rm -it \
+docker run -d --restart=always \
   --name grafana --hostname medtech-boxe-pi \
   -e PGID=1000 -e PUID=1000 \
   -p 3000:3000 \

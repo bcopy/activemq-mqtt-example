@@ -1,0 +1,63 @@
+version: '2'
+
+services:
+  activemq:
+    image: woahbase/alpine-activemq:armhf
+    restart: always
+    healthcheck:
+      - test: ["CMD", "curl", "-f", "http://localhost:8161"]
+      - interval: 60s
+      - timeout: 10s
+      - retries: 5
+    ports:
+      - 1883:1883
+      - 5672
+      - 61613:61613
+      - 61614:61614
+      - 61616:61616 
+      - 8161:8161
+  influxdb:
+    image: woahbase/alpine-influxdb:armhf
+    restart: always
+    ports:
+      - 4242:4242
+      - 8086:8086
+      - 8088:8088
+    healthcheck:
+      - test: ["CMD", "curl", "-f", "http://localhost:8086"]
+      - interval: 30s
+      - timeout: 10s
+      - retries: 5
+    environment:
+      - PGID=1000
+      - PUID=1000
+    volumes:
+      - ./volumes/influxdb/data:/var/lib/influxdb
+      - /etc/hosts:/etc/hosts:ro
+      - /etc/localtime:/etc/localtime:ro
+  telegraf:
+    image: telegraf
+    restart: always
+    depends_on:
+      influxdb:
+        condition: service_healthy  
+      activemq:
+        condition: service_healthy  
+    volumes:
+      - ./modules/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /etc/hosts:/etc/hosts:ro
+      - /etc/localtime:/etc/localtime:ro
+  grafana:
+    image: woahbase/alpine-grafana:armhf
+    restart: always
+    depends_on:
+      influxdb:
+        condition: service_healthy  
+    environment:
+      - PGID=1000
+      - PUID=1000
+    volumes:
+      - ./volumes/grafana/data:/var/lib/grafana/data
+      - ./volumes/grafana/conf:/var/lib/grafana/conf
+      - /etc/hosts:/etc/hosts:ro
+      - /etc/localtime:/etc/localtime:ro

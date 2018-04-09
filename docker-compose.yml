@@ -42,7 +42,7 @@ services:
       - influxdb
       - activemq
     volumes:
-      - ./modules/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./modules/telegraf/telegraf-compose.conf:/etc/telegraf/telegraf.conf:ro
       - /etc/hosts:/etc/hosts:ro
       - /etc/localtime:/etc/localtime:ro
   grafana:

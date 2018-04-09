@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   activemq:
-    image: woahbase/alpine-activemq #:armhf
+    image: woahbase/alpine-activemq:armhf
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://admin:admin@activemq:8161/api/jolokia", "-o","/dev/null"]
@@ -17,7 +17,7 @@ services:
       - 61616:61616 
       - 8161:8161
   influxdb:
-    image: woahbase/alpine-influxdb #:armhf
+    image: woahbase/alpine-influxdb:armhf
     restart: always
     ports:
       - 4242:4242
@@ -46,7 +46,7 @@ services:
       - /etc/hosts:/etc/hosts:ro
       - /etc/localtime:/etc/localtime:ro
   grafana:
-    image: woahbase/alpine-grafana #:armhf
+    image: woahbase/alpine-grafana:armhf
     restart: always
     depends_on:
       - influxdb

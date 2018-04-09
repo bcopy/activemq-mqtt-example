@@ -1,14 +1,14 @@
-version: '2'
+version: '2.1'
 
 services:
   activemq:
-    image: woahbase/alpine-activemq:armhf
+    image: woahbase/alpine-activemq #:armhf
     restart: always
     healthcheck:
-      - test: ["CMD", "curl", "-f", "http://localhost:8161"]
-      - interval: 60s
-      - timeout: 10s
-      - retries: 5
+      test: ["CMD", "curl", "-f", "http://admin:admin@activemq:8161/api/jolokia", "-o","/dev/null"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
     ports:
       - 1883:1883
       - 5672
@@ -17,47 +17,46 @@ services:
       - 61616:61616 
       - 8161:8161
   influxdb:
-    image: woahbase/alpine-influxdb:armhf
+    image: woahbase/alpine-influxdb #:armhf
     restart: always
     ports:
       - 4242:4242
       - 8086:8086
       - 8088:8088
     healthcheck:
-      - test: ["CMD", "curl", "-f", "http://localhost:8086"]
-      - interval: 30s
-      - timeout: 10s
-      - retries: 5
+      test: ["CMD", "wget", "-q", "http://influxdb:8086/ping", "-O", "-"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     environment:
       - PGID=1000
       - PUID=1000
     volumes:
-      - ./volumes/influxdb/data:/var/lib/influxdb
+      - ./volumes/influxdb/data:/var/lib/influxdb:z
       - /etc/hosts:/etc/hosts:ro
       - /etc/localtime:/etc/localtime:ro
   telegraf:
     image: telegraf
     restart: always
     depends_on:
-      influxdb:
-        condition: service_healthy  
-      activemq:
-        condition: service_healthy  
+      - influxdb
+      - activemq
     volumes:
       - ./modules/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       - /etc/hosts:/etc/hosts:ro
       - /etc/localtime:/etc/localtime:ro
   grafana:
-    image: woahbase/alpine-grafana:armhf
+    image: woahbase/alpine-grafana #:armhf
     restart: always
     depends_on:
-      influxdb:
-        condition: service_healthy  
+      - influxdb
+    ports:
+      - 3000:3000
     environment:
       - PGID=1000
       - PUID=1000
     volumes:
-      - ./volumes/grafana/data:/var/lib/grafana/data
-      - ./volumes/grafana/conf:/var/lib/grafana/conf
+     # - ./volumes/grafana/data:/var/lib/grafana/data:z
+     # - ./volumes/grafana/conf:/var/lib/grafana/conf:z
       - /etc/hosts:/etc/hosts:ro
       - /etc/localtime:/etc/localtime:ro
